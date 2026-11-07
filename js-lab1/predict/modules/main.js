@@ -6,3 +6,4 @@ headerClick();
 headerClick();
 console.log("footer sees:", footerClick());
 // Prediction:  (is `clicks` shared between header and footer, or does each get its own?)
+// footer sees: 3
