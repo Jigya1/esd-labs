@@ -4,22 +4,30 @@
 
 // Add an id. If it is already there, return the SAME array (nothing changed).
 export function addToPlanner(planner, courseId) {
-  throw new Error("TODO");
+  return planner.includes(courseId) ? planner : [...planner, courseId];
 }
 
 // Remove an id. If it is not there, return the SAME array.
 export function removeFromPlanner(planner, courseId) {
-  throw new Error("TODO");
+  return planner.includes(courseId)
+    ? planner.filter((id) => id != courseId)
+    : planner;
 }
 
 // Return a new course object with some fields changed.
 export function updateCourse(course, changes) {
-  throw new Error("TODO");
+  return { ...course, ...changes };
 }
 
 // Return a new list where the matching course has one fewer seat.
 // Untouched courses must be the SAME objects as before.
 // If the course is full or not found, return the SAME list.
 export function takeSeat(courses, courseId) {
-  throw new Error("TODO");
+  return courses.some((c) => c.id === courseId && c.seatsLeft > 0)
+    ? courses.map((c) =>
+        c.id == courseId && c.seatsLeft > 0
+          ? { ...c, seatsLeft: c.seatsLeft - 1 }
+          : c,
+      )
+    : courses;
 }
