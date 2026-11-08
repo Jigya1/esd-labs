@@ -17,9 +17,24 @@
 // Stretch: moveCourse(plan, from, to, courseId) — out of one semester, into another.
 
 export function addToSemester(plan, semester, courseId) {
-  throw new Error("TODO");
+  if (Object.hasOwn(plan.semesters, semester)) {
+    if (plan.semesters[semester]?.includes(courseId)) return plan;
+  }
+  return {
+    ...plan,
+    semesters: {
+      ...plan.semesters,
+      [semester]: [...(plan.semesters[semester] || []), courseId],
+    },
+  };
 }
 
 export function moveCourse(plan, from, to, courseId) {
-  throw new Error("TODO");
+  if (!plan.semesters[from].includes(courseId) || from === to) return plan;
+  const remaining = plan.semesters[from].filter((id) => id !== courseId);
+  const updatedPlan = {
+    ...plan,
+    semesters: { ...plan.semesters, [from]: remaining },
+  };
+  return addToSemester(updatedPlan, to, courseId);
 }
