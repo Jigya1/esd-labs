@@ -83,7 +83,7 @@ function renderStatus(state) {
 }
 
 function renderCourses(state) {
-  console.count("renderCourses");
+  //console.count("renderCourses");
   els.courses.replaceChildren(
     ...state.courses.map((course) => {
       const view = cardView(course, state.planner);
@@ -203,16 +203,17 @@ function render() {
 // LOAD_START before; LOAD_OK or LOAD_FAIL after. Use fetchCourses(filters, fetchWithNetwork).
 // Section 09: keep only the LATEST response, with createLatestOnly().
 // ---------------------------------------------------------------------------
+const track = createLatestOnly();
 async function load() {
   // TODO
   const { department, query } = getState();
   dispatch({ type: "LOAD_START" });
   try {
-    const courses = await fetchCourses(
-      { department, q: query },
-      fetchWithNetwork,
+    const result = await track(
+      fetchCourses({ department, q: query }, fetchWithNetwork),
     );
-    dispatch({ type: "LOAD_OK", courses: courses });
+    if (result.stale) return;
+    dispatch({ type: "LOAD_OK", courses: result.value });
   } catch (error) {
     dispatch({ type: "LOAD_FAIL", error: error.message });
   }
