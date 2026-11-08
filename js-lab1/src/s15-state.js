@@ -7,6 +7,27 @@
 //   stores the result, and then calls onChange() — the "hidden code" that
 //   redraws the screen.
 // - If the new value is the same (Object.is), it does nothing: no onChange.
+
 export function useState(initial, onChange) {
-  throw new Error("TODO");
+  let state = initial;
+
+  function getState() {
+    return state;
+  }
+
+  function setState(next) {
+    let newValue;
+    if (typeof next === "function") {
+      newValue = next(state);
+    } else {
+      newValue = next;
+    }
+    if (Object.is(state, newValue)) {
+      return;
+    }
+    state = newValue;
+    onChange();
+  }
+
+  return [getState, setState];
 }
