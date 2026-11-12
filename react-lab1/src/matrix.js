@@ -17,7 +17,14 @@ export const START = [
 // Never change `matrix` (the tests freeze it, so changing it throws).
 // Rows you don't touch must stay the SAME arrays; only the changed row is new.
 export function incrementAt(matrix, row, col) {
-  throw new Error("TODO");
+  return matrix.map((currentRow, r) => {
+    if (r === row) {
+      const newRow = [...currentRow];
+      newRow[col] += 1;
+      return newRow;
+    }
+    return currentRow;
+  });
 }
 
 // Section 09 — numbers worked out from the matrix, never stored.
