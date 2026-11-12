@@ -5,6 +5,7 @@ import Header from "./Header.jsx";
 import Matrix from "./Matrix.jsx";
 import Stats from "./Stats.jsx";
 import { START, incrementAt, decrementAt, zeros } from "./matrix.js";
+import Cell from "./Cell.jsx";
 
 export default function App() {
   // Section 07: hold the matrix in state, starting from START, and render
@@ -13,9 +14,11 @@ export default function App() {
   //             Pass it down to Matrix as onIncrement.
   // Section 09: render <Stats matrix={…} /> NEXT TO the matrix, not inside it.
   // Section 11: load /matrix.json once, in a useEffect, and put it in the state.
+  const [matrix, setMatrix] = useState(START);
   return (
     <main className="app">
       <Header />
+      <Matrix matrix={matrix} />
     </main>
   );
 }
