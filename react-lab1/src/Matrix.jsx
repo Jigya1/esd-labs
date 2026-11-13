@@ -12,6 +12,7 @@
 // Lists need a key on the element you return from map — section 06 says which.
 // Section 08: each Cell's onClick calls onIncrement with THAT cell's row and column.
 import Cell from "./Cell.jsx";
+import { stats } from "./matrix.js";
 
 export default function Matrix({ matrix, onIncrement }) {
   return (
@@ -26,6 +27,7 @@ export default function Matrix({ matrix, onIncrement }) {
                   col={c}
                   value={value}
                   onClick={() => onIncrement(r, c)}
+                  isMax={stats(matrix).max > 0 && value === stats(matrix).max}
                 >
                   {" "}
                 </Cell>
