@@ -31,7 +31,16 @@ export function incrementAt(matrix, row, col) {
 //   stats([[1, 0], [3, 4]])  →  { sum: 8, average: 2, max: 4, nonZero: 3 }
 // average = sum ÷ the number of cells. An empty matrix, [], gives 0 for all four.
 export function stats(matrix) {
-  throw new Error("TODO");
+  const list = matrix.flat();
+  if (list.length === 0) {
+    return { sum: 0, average: 0, max: 0, nonZero: 0 };
+  }
+  const sum = list.reduce((s, num) => s + num, 0);
+  const avg = sum / list.length;
+  const max = Math.max(...list);
+  const nonZeroValues = list.filter((num) => num !== 0);
+  const nonZero = nonZeroValues.length;
+  return { sum: sum, average: avg, max: max, nonZero: nonZero };
 }
 
 // Section 12 (stretch) — the same shape, every cell 0.
