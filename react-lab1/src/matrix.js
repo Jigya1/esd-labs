@@ -55,5 +55,13 @@ export function zeros(matrix) {
 
 // IN-LAB TASK (AI closed) — leave this until the lab. See inlab/decrement.check.jsx.
 export function decrementAt(matrix, row, col) {
-  throw new Error("TODO");
+  if (matrix[row][col] === 0) return matrix;
+  return matrix.map((currentRow, r) => {
+    if (r === row) {
+      const newRow = [...currentRow];
+      newRow[col] -= 1;
+      return newRow;
+    }
+    return currentRow;
+  });
 }

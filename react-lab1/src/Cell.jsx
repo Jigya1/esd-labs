@@ -8,14 +8,19 @@
 // so a screen reader (and the tests) can tell the cells apart. People count from 1:
 //   row 0, col 1, value 5   →   aria-label "Row 1, column 2: 5"
 // Clicking it calls onClick. Pass the function — don't call it.
-export default function Cell({ row, col, value, onClick, isMax }) {
+export default function Cell({ row, col, value, onClick, isMax, onDecrement }) {
   function getClass(isMax) {
     return isMax === true ? "cell max" : "cell";
+  }
+  function handleContextMenu(event) {
+    event.preventDefault();
+    onDecrement(row, col);
   }
   return (
     <button
       className={getClass(isMax)}
       onClick={onClick}
+      onContextMenu={handleContextMenu}
       aria-label={`Row ${row + 1}, column ${col + 1}: ${value}`}
     >
       {value}

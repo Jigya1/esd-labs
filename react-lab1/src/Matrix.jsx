@@ -14,7 +14,7 @@
 import Cell from "./Cell.jsx";
 import { stats } from "./matrix.js";
 
-export default function Matrix({ matrix, onIncrement }) {
+export default function Matrix({ matrix, onIncrement, onDecrement }) {
   return (
     <table className="matrix">
       <tbody>
@@ -28,11 +28,15 @@ export default function Matrix({ matrix, onIncrement }) {
                   value={value}
                   onClick={() => onIncrement(r, c)}
                   isMax={stats(matrix).max > 0 && value === stats(matrix).max}
+                  onDecrement={onDecrement}
                 >
                   {" "}
                 </Cell>
               </td>
             ))}
+            <td aria-label={`Row ${r + 1} total`}>
+              {row.reduce((sum, num) => sum + num, 0)}
+            </td>
           </tr>
         ))}
       </tbody>
