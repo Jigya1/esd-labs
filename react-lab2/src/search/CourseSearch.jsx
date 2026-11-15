@@ -9,11 +9,13 @@
 import { useState } from "react";
 import { useCourseSearch } from "./useCourseSearch.js";
 import { SearchResults } from "./SearchResults.jsx";
+import { useDebounced } from "./useDebounced.js";
 
 export function CourseSearch() {
   // Replace this line with the search box (pre-lab section 06).
   const [query, setQuery] = useState("");
-  const { results, status } = useCourseSearch(query);
+  const settledQuery = useDebounced(query, 250);
+  const { results, status } = useCourseSearch(settledQuery);
   return (
     <>
       <h2>Search the catalogue</h2>
