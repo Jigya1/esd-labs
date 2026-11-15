@@ -12,14 +12,18 @@ Point at code as `file:line`, e.g. `CoursesPage.jsx:14`.
 
 | File the AI gave you | What's in it (components, hooks) | Lines |
 | --- | --- | --- |
-|src/courses/useCourses.js |useCourses(), useState, useEffect  |105  |
-|src/courses/CoursesView.jsx |CoursesView  |135  |
-|src/courses/CoursesPage.jsx |useCourses, CoursesPage  |11  |
+|src/courses/useCourses.js |useCourses custom hook; uses useState and useEffect  |105  |
+|src/courses/CoursesView.jsx |CoursesView component  |135  |
+|src/courses/CoursesPage.jsx |CoursesPage component  |11  |
 
 - Does it run? List loads / valid add appears in order / duplicate code shows the 409
-  message / bad input shows fieldErrors under the inputs: Yes
-- Requests in the Network tab — on page load: _2_ ; per add: _1_
-- `npm test` before any fix: _31_ passed / _31_ failed. Which test files fail? CoursesView.test.jsx, AddCourseForm.test.jsx, useCourses.test.jsx
+  message / bad input shows fieldErrors under the inputs:
+  Yes
+- Requests in the Network tab — on page load: __ ; per add: __
+2 requests on page load, 1 per add
+- `npm test` before any fix: __ passed / __ failed. Which test files fail? 
+31 passed, 31 failed
+Test files failed: AddCourseForm.test.jsx, fieldErrors.test.jsx, CoursesView.test.jsx, useCourses.test.jsx
 
 ## 1. Part A — walk the allowed list
 
@@ -27,14 +31,14 @@ Is each element present, and in the right place?
 
 | Element (the sheet, Part A) | Where it is in the AI's code (`file:line`, or "missing") | Right place? If not, where should it be? |
 | --- | --- | --- |
-| One View component that only renders |  |  |
-| Fetch + logic in a separate hook or module |  |  |
-| `useState` for the course list, at the right level |  |  |
-| `useState` for the form's inputs, at the right level |  |  |
-| `useEffect` — for the initial fetch only (with a cleanup) |  |  |
-| Props down, callbacks up (the form raises "add this course") |  |  |
-| `.map` to render the list, with a stable `key` |  |  |
-| Loading / error / empty states, from one `status` |  |  |
+| One View component that only renders |CoursesView.jsx:1–130  |No |It also contains the add-course form. Move the form into AddCourseForm.jsx.
+| Fetch + logic in a separate hook or module |useCourses.js:12–107  |No  |The hook should expose courses, status, error, and addCourse(courseRequest).
+| `useState` for the course list, at the right level |useCourses.js:13  |Yes  |
+| `useState` for the form's inputs, at the right level |useCourses.js:17–19  |No  |Move form input state into AddCourseForm.jsx, since the form owns its inputs.
+| `useEffect` — for the initial fetch only (with a cleanup) |useCourses.js:24–38  |No  |Add cleanup to prevent stale responses from updating state, particularly in React StrictMode.
+| Props down, callbacks up (the form raises "add this course") |CoursesPage.jsx:6 |No  |Pass onAdd={addCourse} to AddCourseForm. The form should not fetch directly.
+| `.map` to render the list, with a stable `key` |CoursesView.jsx:31–32  |Yes  |
+| Loading / error / empty states, from one `status` |useCourses.js:14–15 |No  |Replace separate loading/error states with one status state: "loading", "error", or "ready"
 
 ## 2. Part B — scan for "not yet"
 
@@ -42,14 +46,14 @@ Search the files (VS Code: Ctrl/Cmd+Shift+F) for each one.
 
 | Not yet | Found? (`file:line`) | What it does in *this* slice | Cut, or keep — and why |
 | --- | --- | --- | --- |
-| `useMemo` |  |  |  |
-| `useCallback` |  |  |  |
-| `useReducer` |  |  |  |
-| `useRef` |  |  |  |
-| Context (`createContext`, `useContext`) |  |  |  |
-| A data-fetching library, or `axios`, or raw `fetch` instead of `apiFetch` |  |  |  |
-| TypeScript (types, interfaces, `.ts`/`.tsx`) |  |  |  |
-| Anything else nobody taught you (name it) |  |  |  |
+| `useMemo` |No  |  |  |
+| `useCallback` |No  |  |  |
+| `useReducer` |No  |  |  |
+| `useRef` |No  |  |  |
+| Context (`createContext`, `useContext`) |No  |  |  |
+| A data-fetching library, or `axios`, or raw `fetch` instead of `apiFetch` |No  |  |  |
+| TypeScript (types, interfaces, `.ts`/`.tsx`) |No  |  |  |
+| Anything else nobody taught you (name it) |No  |  |  |
 
 ## 3. The rule — every hook and every component split
 
@@ -59,16 +63,50 @@ answers — if you can't name its job, the decision is "cut".
 
 | Hook call or component (`file:line`) | What earns it here? (one sentence) | Keep / cut / move (to where) |
 | --- | --- | --- |
-|  |  |  |
+|useState – useCourses.js:13  |Stores the course list fetched from the API and updated after adding a course.  |Keep in useCourses  |
+|useState – useCourses.js:14-15  |Tracks the initial loading and error states.  |Replace with one status state and one error state in useCourses  |
+|useState – useCourses.js:17–19  |Stores the values entered in the Add a course form.  |Move to AddCourseForm.jsx.  |
+|useState – useCourses.js:20  |Tracks whether the add-course request is running.  |Move to AddCourseForm.jsx  |
+|useState – useCourses.js:21-22  |Stores submission and field validation errors.  |Move to AddCourseForm.jsx  |
+|useEffect – useCourses.js:24  |Fetches the initial course list when the hook is mounted.  |Keep in useCourses; add cleanup.  |
+|CoursesPage – CoursesPage.jsx:4  |Connects the hook to the page's View and form.  |Keep  |
+|CoursesView – CoursesView.jsx:1  |Displays the course list and loading/error/empty states.  |Keep, but remove the form.  |
+|AddCourseForm (AddCourseForm.jsx:3) |Owns form inputs, submission state, and submission errors.  |Implement; currently throws a TODO error. |
 
 ## 4. Decisions — before any fix prompt
 
 - I will **cut**:
+
+Separate loading and loadError states.
+Form state and submission logic from useCourses.
+The Add a course form from CoursesView.
+
 - I will **move** (from → to):
+
+Form input state: useCourses.js → AddCourseForm.jsx.
+Submission loading and error handling: useCourses.js → AddCourseForm.jsx.
+Form rendering: CoursesView.jsx → AddCourseForm.jsx.
+
 - I will **add** (missing from the AI's version):
+
+A separate AddCourseForm.jsx component accepting { onAdd }.
+An addCourse(courseRequest) function in useCourses.
+A single status state with "loading", "error", and "ready".
+Cleanup in the initial-fetch useEffect.
+aria-invalid and aria-describedby for fields with validation errors.
+role="alert" for form-level errors.
+
 - Other smells I found (state stored that could be computed, a reload after add, browser
   validation, `key={index}`, swallowed errors…):
-
+  
+The View expects { courses, status, error }, but the AI supplied separate loading/error props.
+The form expects an onAdd callback, but the AI put API submission logic directly in the hook.
+The AI's CoursesView accesses form.code, but the tests don't supply a form prop.
+The AI's AddCourseForm is still an unimplemented TODO.
+The form must preserve entered values after a failed submission.
+The form must clear its values after successful submission.
+The hook must use the POST response rather than performing another GET.
+The hook must reject with the original API error so the form can display its message and field errors.
 ---
 
 ## 5. Strip check (section 14 of the doc)
