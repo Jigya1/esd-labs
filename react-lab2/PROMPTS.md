@@ -90,27 +90,117 @@ Reply with each file in full, its path on the first line. Keep explanations shor
 
 **What came back:** (which files; which hooks it used; anything from the "not yet" list;
 anything it did that the contract didn't ask for)
+Three files: useCourses.js, CoursesView.jsx, and CoursesPage.jsx.
+Used useState and useEffect in useCourses.js.
+Did not implement the separate AddCourseForm.jsx component.
+Kept form state, submission logic, and validation errors inside useCourses.js.
+Used separate loading and loadError states instead of a single status state.
+Did not add cleanup to the initial-fetch useEffect.
+The AddCourseForm.jsx file remained an unimplemented TODO.
 
 **Did it run?** (`npm run dev`: list loads? add works? 409 shown? fieldErrors shown?
 `npm test`: __ passed / __ failed)
+npm run dev: Runs
+list loads
+add works
+409 shown
+fieldErrors shown
+npm test: 31 passed / 31 failed
 
 **What I did with it:**
-
+Reviewed the failed tests to identify mismatches with the expected contract.
+Identified the need to separate AddCourseForm from CoursesView.
+Decided to move form state and submission handling into AddCourseForm.jsx.
+Planned to update useCourses.js to expose status, error, and addCourse.
+Identified the need for useEffect cleanup and accessible error messages.
+Will fix the component structure and rerun the tests
 ---
 
 ## Prompt 2 —
 
 **Why I sent it:** (for a fix prompt: which decision in AUDIT.md it carries out)
+To implement the decisions in AUDIT.md by separating responsibilities properly: moving form state, submission handling, and form rendering into AddCourseForm.jsx, while keeping course fetching and adding logic inside useCourses.js.
 
 **Sent:**
 
 ```text
+I audited the code you gave me. Change it exactly like this, and nothing else:
+1. Move Form input state from useCourses.js to AddCourseForm.jsx.
+2. Move Submission loading and error handling from useCourses.js to AddCourseForm.jsx.
+3. Move Form rendering from CoursesView.jsx to AddCourseForm.jsx.
+4. Add a separate AddCourseForm.jsx component accepting { onAdd }.
+5. Add an addCourse(courseRequest) function in useCourses.
+6. Add a single status state with "loading", "error", and "ready".
+7. Add cleanup in the initial-fetch useEffect.
+8. Add aria-invalid and aria-describedby for fields with validation errors.
+9. Add role="alert" for form-level errors.
+The files must end up with exactly this shape:
+### `src/courses/useCourses.js` — the hook: fetch and logic
+
+```js
+export function useCourses()  // → { courses, status, error, addCourse }
+```
+
+- `status` is one field: `"loading"` | `"ready"` | `"error"` — not `loading` / `error` booleans.
+- `error` is the error's message (a string) when `status` is `"error"`, otherwise `null`.
+- Loads `GET /api/courses` **once**, when the page appears: a `useEffect` with `[]`, whose
+  cleanup sets an `ignore` flag so a stale answer is dropped.
+- `addCourse(courseRequest)`: POSTs it with `apiFetch`; inserts the 201 body into `courses`,
+  sorted by code, as a **new** array (no reload of the list); resolves with the created
+  course. If `apiFetch` throws, `addCourse` throws the same `ApiError` — it doesn't catch
+  it; the form shows it.
+
+### `src/courses/CoursesView.jsx` — the View: only renders
+
+```jsx
+export function CoursesView({ courses, status, error })
+```
+
+- Renders only: no fetch, no `apiFetch`, no hooks, no state.
+- `"loading"` → `Loading courses…` · `"error"` → `Couldn't load courses: <error>` ·
+  no courses → `No courses yet.` · otherwise a `<ul>` with one `<li key={course.id}>` per
+  course, **in the order it is given**, with the two lines from prompt 1, point 2.
+
+### `src/courses/AddCourseForm.jsx` — the form: raises "add this course"
+
+```jsx
+export function AddCourseForm({ onAdd })
+```
+
+- Its own state: the six input values (controlled inputs, one `<label>` each: Code, Title,
+  Department, Credits, Capacity, Description — a textarea), whether it is submitting, and
+  the last error.
+- On submit: `preventDefault()`, then
+  `await onAdd({ code, title, department, credits: Number(…), capacity: Number(…), description })`
+  with `description` = the text, or `null` when empty. The "Add course" button is disabled
+  while waiting.
+- Success → clear the form and the error. Failure → keep what was typed; show
+  `error.message` above the button, and each `error.fieldErrors` entry directly under its
+  own input (not inside the `<label>`).
+- Errors a screen reader can find: an input with a `fieldErrors` entry has
+  `aria-invalid="true"` and `aria-describedby` set to its message's `id`; the message
+  above the button has `role="alert"`.
+- Never calls `apiFetch` or `fetch` itself.
+
+### `src/courses/CoursesPage.jsx` — puts them together
+
+```jsx
+export function CoursesPage()
+```
+
+- Calls `useCourses()`, and renders `<h1>Courses</h1>`,
+  `<CoursesView courses={…} status={…} error={…} />` and `<AddCourseForm onAdd={addCourse} />`.
+  Nothing else.
+Same rules as before: only useState and useEffect; no useMemo, useCallback, useReducer,
+useRef or context; JavaScript; apiFetch only. Reply with the changed files in full.
 
 ```
 
 **What came back:**
+The AI returned the complete contents of all four files: useCourses.js, CoursesView.jsx, AddCourseForm.jsx, and CoursesPage.jsx. It separated the responsibilities, moved form state into AddCourseForm, added cleanup to the initial fetch, and implemented the POST logic with sorted insertion.
 
 **What I kept, and what I rejected:**
+I kept the separation of responsibilities, single status state, useEffect cleanup, error handling, and accessibility improvements.
 
 ---
 
@@ -118,6 +208,11 @@ anything it did that the contract didn't ask for)
 
 ## Afterwards
 
-- How many prompts did the whole feature take?
+- How many prompts did the whole feature take? 
+2
+
 - Which of your prompts would you write differently now, and how?
+I would write Prompt 1 more specifically by defining the responsibilities of each component, the expected hook return values, error handling, and accessibility requirements upfront. This would reduce ambiguity and avoid multiple rounds of corrections.
+
 - One thing the rules in prompt 1 prevented (or failed to prevent):
+The rules helped prevent unnecessary hooks and direct fetch calls, but failed to prevent the AI from putting form state and form rendering in the wrong components.

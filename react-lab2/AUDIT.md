@@ -98,7 +98,7 @@ role="alert" for form-level errors.
 
 - Other smells I found (state stored that could be computed, a reload after add, browser
   validation, `key={index}`, swallowed errors…):
-  
+
 The View expects { courses, status, error }, but the AI supplied separate loading/error props.
 The form expects an onAdd callback, but the AI put API submission logic directly in the hook.
 The AI's CoursesView accesses form.code, but the tests don't supply a form prop.
@@ -118,19 +118,25 @@ For each "not yet" item you removed — one at a time:
 |  |  |  |
 
 If the AI used none, say so here, and say which rule in prompt 1 you think prevented it.
+AI used none. This rule in prompt 1 might have prevented it:
+"Use only useState and useEffect. Do not use useMemo, useCallback, useReducer, useRef, or
+context. No TypeScript. Plain fetch, no data-fetching library. One View component that only
+renders; put fetch and logic in a separate hook or module."
 
 ## 6. Before / after
 
 |  | Before (the AI's first version) | After (yours) |
 | --- | --- | --- |
-| Files and components |  |  |
-| `useState` calls (and where) |  |  |
-| `useEffect` calls |  |  |
-| "Not yet" items |  |  |
-| Requests: on load / per add |  |  |
-| `npm test` |  |  |
+| Files and components |3 files: useCourses.js, CoursesView.jsx, CoursesPage.jsx. Form was inside CoursesView.  |4 files: useCourses.js, CoursesView.jsx, AddCourseForm.jsx, CoursesPage.jsx. Each has a separate responsibility.  |
+| `useState` calls (and where) |Multiple states for courses, loading, errors, form values and submission. Most were in useCourses.js.  |3 state calls in useCourses.js (courses, status, error) and 3 in AddCourseForm.jsx (form values, submitting, form error).  |
+| `useEffect` calls |1 in useCourses.js for the initial GET, without cleanup.  |1 in useCourses.js for the initial GET, with cleanup using an ignore flag.  |
+| "Not yet" items |Nothing  |Nothing  |
+| Requests: on load / per add |GET on initial load; POST on add, followed by the original implementation's list-management logic.  |One GET on initial load; one POST per add. The returned course is inserted in sorted order without another GET. |
+| `npm test` |31 passed, 31 failed  |62 passed  |
 
 ## 7. Two sentences
 
 - One thing the AI got right that you might not have thought of:
+Using an ignore flag in the useEffect cleanup prevents stale API responses from updating state, especially in React StrictMode.
 - One thing you will never accept from an AI without checking again:
+Whether the implementation actually follows the project contract and passes the tests instead of just looking correct.
