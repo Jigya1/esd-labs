@@ -12,12 +12,14 @@ Point at code as `file:line`, e.g. `CoursesPage.jsx:14`.
 
 | File the AI gave you | What's in it (components, hooks) | Lines |
 | --- | --- | --- |
-|  |  |  |
+|src/courses/useCourses.js |useCourses(), useState, useEffect  |105  |
+|src/courses/CoursesView.jsx |CoursesView  |135  |
+|src/courses/CoursesPage.jsx |useCourses, CoursesPage  |11  |
 
 - Does it run? List loads / valid add appears in order / duplicate code shows the 409
-  message / bad input shows fieldErrors under the inputs:
-- Requests in the Network tab — on page load: __ ; per add: __
-- `npm test` before any fix: __ passed / __ failed. Which test files fail?
+  message / bad input shows fieldErrors under the inputs: Yes
+- Requests in the Network tab — on page load: _2_ ; per add: _1_
+- `npm test` before any fix: _31_ passed / _31_ failed. Which test files fail? CoursesView.test.jsx, AddCourseForm.test.jsx, useCourses.test.jsx
 
 ## 1. Part A — walk the allowed list
 
